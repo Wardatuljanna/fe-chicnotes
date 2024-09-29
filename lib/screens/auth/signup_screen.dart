@@ -1,12 +1,12 @@
 import 'package:chicnotes/routes.dart';
 import 'package:chicnotes/widgets/custom_button.dart';
+import 'package:chicnotes/widgets/custom_textfield.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:chicnotes/widgets/custom_textfield.dart';
 import 'package:get/get.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class SignupScreen  extends StatelessWidget{
+  const SignupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 120),
+              const SizedBox(height: 50),
               const Align(
                 alignment: Alignment.center,
                 child: Text(
@@ -29,23 +29,35 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 50), // Menambah jarak antar widget
+              const SizedBox(height: 30), 
+              const CustomTextField(
+                hint: 'Name',
+              ),
+              const SizedBox(height: 10),
+              const CustomTextField(
+                hint: 'Address',
+              ),
+              const SizedBox(height: 10),
+              const CustomTextField(
+                hint: 'Contact',
+              ),
+              const SizedBox(height: 10),
               const CustomTextField(
                 hint: 'Email',
-                obscureText: false, // Ensure this is set correctly
+                obscureText: false, 
               ),
               const SizedBox(height: 10),
               const CustomTextField(
                 hint: 'Password',
+                obscureText: true, 
+              ),
+              const SizedBox(height: 10),
+              const CustomTextField(
+                hint: 'Confirm Password',
                 obscureText: true,
               ),
               const SizedBox(height: 20),
-              CustomButton(
-                label: "Login",
-                onPressed: () {
-                  Get.offAllNamed(GetRoutes.home);
-                },
-              ),
+              CustomButton(label: "Sign Up", onPressed: () {},),
               const SizedBox(height: 20),
               Text.rich(
                 TextSpan(
@@ -55,12 +67,14 @@ class LoginScreen extends StatelessWidget {
                     color: Color(0xff949494),
                   ),
                   children: [
-                    const TextSpan(text: 'Don\'t have an account?'),
+                    const TextSpan(
+                      text: 'Already have an account?'
+                    ),
                     TextSpan(
-                      text: 'Sign Up',
+                      text: 'Login',
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          Get.toNamed(GetRoutes.signup);
+                          Get.toNamed(GetRoutes.login);
                         },
                       style: const TextStyle(
                         color: Color.fromARGB(255, 0, 26, 255),
@@ -69,9 +83,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                textHeightBehavior:
-                    const TextHeightBehavior(applyHeightToFirstAscent: false),
-                softWrap: false,
+                textHeightBehavior: 
+                  const TextHeightBehavior(applyHeightToFirstAscent: false),
+                  softWrap: false,
               ),
             ],
           ),
