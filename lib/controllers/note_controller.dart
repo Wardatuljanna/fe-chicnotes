@@ -63,7 +63,7 @@ class NoteController extends GetxController {
     update();
   }
 
-  addTodo() async {
+  addNote() async {
     var usr = await SharedPrefs().getUser();
     User user = User.fromJson(json.decode(usr));
 
@@ -79,6 +79,50 @@ class NoteController extends GetxController {
       customSnackbar("Success", res['message'], "success");
       titleController.text = "";
       descriptionController.text = "";
+      fetchAllNotes();
+    } else {
+      customSnackbar("Error", res['message'], "error");
+    }
+    update();
+  }
+
+  editNote(id) async {
+    var usr = await SharedPrefs().getUser();
+    User user = User.fromJson(json.decode(usr));
+
+    var response = await http.post(Uri.parse('${baseurl}edit_note.php'), body: {
+      "id": id,
+      "user_id": user.id,
+      "title": titleController.text,
+      "description": descriptionController.text,
+    });
+
+    var res = await json.decode(response.body);
+
+    if (res['success']) {
+      customSnackbar("Success", res['message'], "success");
+      titleController.text = "";
+      descriptionController.text = "";
+      fetchAllNotes();
+    } else {
+      customSnackbar("Error", res['message'], "error");
+    }
+    update();
+  }
+
+  deleteNote(id) async {
+    var usr = await SharedPrefs().getUser();
+    User user = User.fromJson(json.decode(usr));
+
+    var response = await http.post(Uri.parse('${baseurl}delete_note.php'), body: {
+      "id": id,
+      "user_id": user.id,
+    });
+
+    var res = await json.decode(response.body);
+
+    if (res['success']) {
+      customSnackbar("Success", res['message'], "success");
       fetchAllNotes();
     } else {
       customSnackbar("Error", res['message'], "error");
