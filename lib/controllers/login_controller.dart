@@ -26,12 +26,12 @@ class LoginController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    emailController.dispose();
-    passwordController.dispose();
-  }
+  // @override
+  // void onClose() {
+  //   super.onClose();
+  //   emailController.dispose();
+  //   passwordController.dispose();
+  // }
 
   checkLogin() {
     if (emailController.text.isEmpty ||

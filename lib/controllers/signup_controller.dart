@@ -23,14 +23,14 @@ class SignupController extends GetxController {
     confirmPasswordController = TextEditingController();
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    nameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-  }
+  // @override
+  // void onClose() {
+  //   super.onClose();
+  //   nameController.dispose();
+  //   emailController.dispose();
+  //   passwordController.dispose();
+  //   confirmPasswordController.dispose();
+  // }
 
   checkSignup() {
     if (nameController.text.isEmpty) {
