@@ -193,52 +193,74 @@ class TodoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xffffffff),
-        borderRadius: BorderRadius.circular(14.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x29000000),
-            offset: Offset(0, 3),
-            blurRadius: 12,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            note.title ?? '',
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 21,
-              color: Color(0xff000000),
-              fontWeight: FontWeight.w600,
+    return FutureBuilder<Color>(
+      future: SharedPrefs().getColor(note.id!), // Ambil warna dari SharedPreferences
+      builder: (context, snapshot) {
+        Color tileColor = const Color(0xffffffff); // Default color
+        if (snapshot.connectionState == ConnectionState.done) {
+          tileColor = snapshot.data ?? tileColor; // Gunakan warna yang diambil atau default
+        }
+
+        return GestureDetector(
+          onTap: () {
+            Get.to(DetailNoteScreen(note: note));
+          },
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              color: tileColor, // Gunakan warna yang diambil
+              borderRadius: BorderRadius.circular(14.0),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x29000000),
+                  offset: Offset(0, 3),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  note.title ?? '',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 21,
+                    color: Color(0xff000000),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  note.date ?? '',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 14,
+                    color: Color(0xff000000),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 60, 
+                  ),
+                  child: Text(
+                    note.description ?? '',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      color: Color(0xff949494),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1, 
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            note.date ?? '',
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 14,
-              color: Color(0xff000000),
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          Text(
-            note.description ?? '',
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 16,
-              color: Color(0xff949494),
-            ),
-          )
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -294,6 +316,177 @@ class ManipulateNote extends StatelessWidget {
           ],
         );
       }),
+    );
+  }
+}
+
+class DetailNoteScreen extends StatefulWidget {
+  final Note note;
+
+  const DetailNoteScreen({super.key, required this.note});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _DetailNoteScreenState createState() => _DetailNoteScreenState();
+}
+
+class _DetailNoteScreenState extends State<DetailNoteScreen> {
+  Color selectedColor = const Color(0xffF7F7F7);
+  final SharedPrefs sharedPrefs = SharedPrefs();
+
+  final List<Color> availableColors = [
+    const Color(0xffF7F7F7),
+    Colors.pink[50]!,
+    Colors.blue[50]!,
+    Colors.green[50]!,
+    Colors.yellow[50]!,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSelectedColor();
+  }
+
+  Future<void> _loadSelectedColor() async {
+  if (widget.note.id != null) { 
+    Color color = await sharedPrefs.getColor(widget.note.id!); 
+    setState(() {
+      selectedColor = color;
+    });
+  } else {
+    // Handle the case where note ID is null if necessary
+  }
+}
+
+Future<void> _saveSelectedColor(Color color) async {
+  if (widget.note.id != null) { 
+    await sharedPrefs.storeColor(widget.note.id!, color); 
+    // Handle the case where note ID is null if necessary
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'ChicNotes',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 30,
+            color: Color(0xff000000),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0), 
+            child: DropdownButton<Color>(
+              icon: const Icon(Icons.color_lens, color: Colors.black),
+              underline: SizedBox.shrink(),
+              onChanged: (Color? newColor) {
+                setState(() {
+                  if (newColor != null) {
+                    selectedColor = newColor;
+                  }
+                });
+                _saveSelectedColor(newColor!);
+              },
+              items: availableColors.map<DropdownMenuItem<Color>>((Color color) {
+                return DropdownMenuItem<Color>(
+                  value: color,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    color: color,
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+      body: Container(
+        width: MediaQuery.of(context).size.width, 
+        height: MediaQuery.of(context).size.height,
+        color: selectedColor, 
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.title,
+                    color: Color(0xff000000),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.note.title ?? 'Untitled',
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 24,
+                        color: Color(0xff000000),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Color(0xff000000),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    widget.note.date ?? 'No Date',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      color: Color(0xff777777),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Divider(
+                thickness: 1,
+                color: Color(0xffDCDCDC),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.description,
+                    color: Color(0xff000000),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.note.description ?? 'No Description',
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 18,
+                        color: Color(0xff333333),
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

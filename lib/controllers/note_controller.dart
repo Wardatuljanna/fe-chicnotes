@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 class NoteController extends GetxController {
   List<Note> notes = [];
   List<Note> filteredNote = [];
-
+  Note? detailNote;
   late TextEditingController titleController, descriptionController;
   @override
   void onInit() {
@@ -36,8 +36,9 @@ class NoteController extends GetxController {
     var usr = await SharedPrefs().getUser();
     User user = User.fromJson(json.decode(usr));
 
-    var response = await http
-        .post(Uri.parse('${baseurl}notes.php'), body: {"user_id": user.id});
+    var response = await http.get(
+      Uri.parse('${baseurl}notes.php?user_id=${user.id}'), 
+    );
     var res = await json.decode(response.body);
 
     if (res['success']) {
@@ -62,6 +63,23 @@ class NoteController extends GetxController {
 
     update();
   }
+
+  fetchDetailNote(String noteId) async {
+  var usr = await SharedPrefs().getUser();
+  User user = User.fromJson(json.decode(usr));
+
+  var response = await http.get(
+      Uri.parse('${baseurl}detail_note.php?user_id=${user.id}&id=$noteId'),
+    );
+
+  var res = await json.decode(response.body);
+
+  if (res['success']) {
+    detailNote = Note.fromJson(res['note']); 
+    update(); 
+  } else {
+    customSnackbar("Error", res['message'], "error");
+  }}
 
   addNote() async {
     var usr = await SharedPrefs().getUser();
