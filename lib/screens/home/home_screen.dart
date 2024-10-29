@@ -194,7 +194,7 @@ class TodoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Color>(
-      future: SharedPrefs().getColor(note.id!), // Ambil warna dari SharedPreferences
+      future: SharedPrefs().getColor(note.id!), 
       builder: (context, snapshot) {
         Color tileColor = const Color(0xffffffff); // Default color
         if (snapshot.connectionState == ConnectionState.done) {
@@ -360,11 +360,14 @@ class _DetailNoteScreenState extends State<DetailNoteScreen> {
 }
 
 Future<void> _saveSelectedColor(Color color) async {
-  if (widget.note.id != null) { 
-    await sharedPrefs.storeColor(widget.note.id!, color); 
-    // Handle the case where note ID is null if necessary
+  if (widget.note.id != null) {
+    await sharedPrefs.storeColor(widget.note.id!, color);
+    
+    final noteController = Get.find<NoteController>();
+    noteController.updateColor(widget.note.id!, color); 
   }
 }
+
 
   @override
   Widget build(BuildContext context) {

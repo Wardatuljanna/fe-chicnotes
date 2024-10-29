@@ -147,4 +147,15 @@ class NoteController extends GetxController {
     }
     update();
   }
+
+  var selectedColorMap = <String, Color>{}.obs; // Menggunakan map untuk menyimpan warna berdasarkan ID
+
+  void updateColor(String noteId, Color color) {
+    selectedColorMap[noteId] = color;
+    update(); 
+  }
+
+  Color getColorForNote(String noteId) {
+    return selectedColorMap[noteId] ?? const Color(0xffF7F7F7); 
+  }
 }
