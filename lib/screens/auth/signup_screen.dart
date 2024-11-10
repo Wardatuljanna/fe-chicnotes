@@ -35,7 +35,7 @@ class SignupScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 CustomTextField(
-                  hint: 'Name',
+                  hint: 'Nama',
                   controller: controller.nameController,
                 ),
                 const SizedBox(height: 15),
@@ -46,13 +46,13 @@ class SignupScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 CustomTextField(
-                  hint: 'Password',
+                  hint: 'Kata Sandi',
                   controller: controller.passwordController, 
                   obscureText: true,
                 ),
                 const SizedBox(height: 15),
                 CustomTextField(
-                  hint: 'Confirm Password',
+                  hint: 'Konfirmasi Kata Sandi',
                   controller: controller.confirmPasswordController,  
                   obscureText: true,
                 ),
@@ -73,7 +73,7 @@ class SignupScreen extends StatelessWidget {
                     ),
                     children: [
                       const TextSpan(
-                        text: 'Already have an account? ',
+                        text: 'Sudah punya akun? ',
                       ),
                       TextSpan(
                         text: 'Login',

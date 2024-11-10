@@ -18,16 +18,17 @@ class SharedPrefs {
     return prefs.remove('user');
   }
 
-  // Simpan warna yang dipilih berdasarkan ID catatan
+  // Store the color based on note ID only when explicitly set
   Future<void> storeColor(String noteId, Color color) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setInt('selectedColor_$noteId', color.value);
   }
 
-  // Ambil warna yang dipilih berdasarkan ID catatan
+  // Retrieve the color for a specific note ID, or use a default if not set
   Future<Color> getColor(String noteId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? colorValue = prefs.getInt('selectedColor_$noteId');
-    return colorValue != null ? Color(colorValue) : const Color(0xffF7F7F7); // Default color
+    // Default color set here only if no color is found
+    return colorValue != null ? Color(colorValue) : const Color(0xffffffff); // Default white color
   }
 }
