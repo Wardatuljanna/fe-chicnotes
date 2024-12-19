@@ -1,1 +1,1 @@
-const String baseurl = "http://192.168.100.48/chicnotes/";
+const String baseurl = "https://bechicnotes-production.up.railway.app/";

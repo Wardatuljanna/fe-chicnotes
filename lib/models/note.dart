@@ -1,56 +1,60 @@
 class AllNotes {
-  bool? success;
-  String? message;
-  List<Note>? note;
+  List<Note>? notes;
 
-  AllNotes({this.success, this.message, this.note});
+  AllNotes({this.notes});
 
   AllNotes.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    message = json['message'];
-    if (json['data'] != null) {
-      note = <Note>[];
-      json['data'].forEach((v) {
-        note!.add(Note.fromJson(v));
+    if (json['notes'] != null) {
+      notes = <Note>[];
+      json['notes'].forEach((v) {
+        notes!.add(Note.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
-    data['message'] = message;
-    if (note != null) {
-      data['data'] = note!.map((v) => v.toJson()).toList();
+    if (notes != null) {
+      data['notes'] = notes!.map((v) => v.toJson()).toList();
     }
     return data;
   }
 }
 
 class Note {
-  String? id;
-  String? userId;
+  int? id;
   String? title;
   String? description;
-  String? date;
+  String? createdAt;
+  String? updatedAt;
+  int? userId;
 
-  Note({this.id, this.userId, this.title, this.description, this.date});
+  Note({
+    this.id,
+    this.title,
+    this.description,
+    this.createdAt,
+    this.updatedAt,
+    this.userId,
+  });
 
   Note.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    userId = json['user_id'];
     title = json['title'];
     description = json['description'];
-    date = json['date'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    userId = json['userId'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['user_id'] = userId;
     data['title'] = title;
     data['description'] = description;
-    data['date'] = date;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    data['userId'] = userId;
     return data;
   }
 }

@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:chicnotes/models/note.dart';
-import 'package:chicnotes/models/user.dart';
 import 'package:chicnotes/utils/baseurl.dart';
 import 'package:chicnotes/utils/custom_snackbar.dart';
 import 'package:chicnotes/utils/shared_prefs.dart';
@@ -14,148 +12,160 @@ class NoteController extends GetxController {
   List<Note> filteredNote = [];
   Note? detailNote;
   late TextEditingController titleController, descriptionController;
+
+  bool isProcessing = false;
+
+  void setProcessing(bool value) {
+    isProcessing = value;
+    update(); // Perbarui UI agar tombol bisa di-disable/enable
+  }
+
   @override
   void onInit() {
     super.onInit();
-
     fetchAllNotes();
-
     titleController = TextEditingController();
     descriptionController = TextEditingController();
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  // @override
+  // void onClose() {
+  //   super.onClose();
+  //   titleController.dispose();
+  //   descriptionController.dispose();
+  // }
 
-    titleController.dispose();
-    descriptionController.dispose();
+  Future<Map<String, String>> getHeaders() async {
+    String? token = await SharedPrefs().getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
   }
 
   fetchAllNotes() async {
-    var usr = await SharedPrefs().getUser();
-    User user = User.fromJson(json.decode(usr));
+  try {
+    var headers = await getHeaders();
 
     var response = await http.get(
-      Uri.parse('${baseurl}notes.php?user_id=${user.id}'), 
+      Uri.parse('${baseurl}note/all'),
+      headers: headers,
     );
-    var res = await json.decode(response.body);
+    var res = json.decode(response.body);
 
-    if (res['success']) {
-      notes = AllNotes.fromJson(res).note!;
-      filteredNote = AllNotes.fromJson(res).note!;
-      update();
+    if (response.statusCode == 200) {
+      notes = res['notes'] != null ? AllNotes.fromJson(res).notes! : [];
+      filteredNote = notes;
+      update(); 
     } else {
-      customSnackbar("Error", "Failed to fetch todos", "error");
+      notes = [];
+      filteredNote = [];
+      update(); 
     }
+  } catch (err) {
+    notes = [];
+    filteredNote = [];
+    update();  
   }
+}
 
   search(String val) {
     if (val.isEmpty) {
       filteredNote = notes;
-      update();
-      return;
+    } else {
+      filteredNote = notes.where((note) => note.title?.toLowerCase().contains(val.toLowerCase()) ?? false).toList();
     }
-
-    filteredNote = notes.where((note) {
-      return note.title!.toLowerCase().contains(val.toLowerCase());
-    }).toList();
-
     update();
   }
 
   fetchDetailNote(String noteId) async {
-  var usr = await SharedPrefs().getUser();
-  User user = User.fromJson(json.decode(usr));
+    try {
+      var headers = await getHeaders();
+      var response = await http.get(Uri.parse('${baseurl}note/$noteId'), headers: headers);
 
-  var response = await http.get(
-      Uri.parse('${baseurl}detail_note.php?user_id=${user.id}&id=$noteId'),
-    );
-
-  var res = await json.decode(response.body);
-
-  if (res['success']) {
-    detailNote = Note.fromJson(res['note']); 
-    update(); 
-  } else {
-    customSnackbar("Error", res['message'], "error");
-  }}
+      var res = json.decode(response.body);
+      if (response.statusCode == 200) {
+        detailNote = Note.fromJson(res['note']);
+        update();
+      } else {
+        customSnackbar("Error", res['message'] ?? "Failed to retrieve record details", "error");
+      }
+    } catch (err) {
+      customSnackbar("Error", "An error occurred on the server", "error");
+    }
+  }
 
   addNote() async {
-    var usr = await SharedPrefs().getUser();
-    User user = User.fromJson(json.decode(usr));
+    try {
+      var headers = await getHeaders();
+      var response = await http.post(Uri.parse('${baseurl}note'), headers: headers, body: jsonEncode({
+        "title": titleController.text,
+        "description": descriptionController.text,
+      }));
 
-    var response = await http.post(Uri.parse('${baseurl}add_note.php'), body: {
-      "user_id": user.id,
-      "title": titleController.text,
-      "description": descriptionController.text,
-    });
-
-    var res = await json.decode(response.body);
-
-    if (res['success']) {
-      customSnackbar("Success", res['message'], "success");
-      titleController.text = "";
-      descriptionController.text = "";
-      fetchAllNotes();
-    } else {
-      customSnackbar("Error", res['message'], "error");
+      var res = json.decode(response.body);
+      if (response.statusCode == 201) {
+        customSnackbar("Success", res['message'], "success");
+        titleController.clear();
+        descriptionController.clear();
+        fetchAllNotes();
+      } else {
+        customSnackbar("Error", res['message'] ?? "Failed to add note", "error");
+      }
+    } catch (err) {
+      customSnackbar("Error", "An error occurred on the server", "error");
     }
-    update();
   }
 
-  editNote(id) async {
-    var usr = await SharedPrefs().getUser();
-    User user = User.fromJson(json.decode(usr));
+  editNote(String id) async {
+    try {
+      var headers = await getHeaders();
+      var response = await http.put(Uri.parse('${baseurl}note/$id'), headers: headers, body: jsonEncode({
+        "title": titleController.text,
+        "description": descriptionController.text,
+      }));
 
-    var response = await http.post(Uri.parse('${baseurl}edit_note.php'), body: {
-      "id": id,
-      "user_id": user.id,
-      "title": titleController.text,
-      "description": descriptionController.text,
-    });
-
-    var res = await json.decode(response.body);
-
-    if (res['success']) {
-      customSnackbar("Success", res['message'], "success");
-      titleController.text = "";
-      descriptionController.text = "";
-      fetchAllNotes();
-    } else {
-      customSnackbar("Error", res['message'], "error");
+      var res = json.decode(response.body);
+      if (response.statusCode == 200) {
+        customSnackbar("Success", res['message'], "success");
+        titleController.clear();
+        descriptionController.clear();
+        fetchAllNotes();
+      } else {
+        customSnackbar("Error", res['message'] ?? "Failed to edit note", "error");
+      }
+    } catch (err) {
+      customSnackbar("Error", "An error occurred on the server", "error");
     }
-    update();
   }
 
-  deleteNote(id) async {
-    var usr = await SharedPrefs().getUser();
-    User user = User.fromJson(json.decode(usr));
+  deleteNote(String id) async {
+  try {
+    var headers = await getHeaders();
+    var response = await http.delete(Uri.parse('${baseurl}note/$id'), headers: headers);
 
-    var response = await http.post(Uri.parse('${baseurl}delete_note.php'), body: {
-      "id": id,
-      "user_id": user.id,
-    });
-
-    var res = await json.decode(response.body);
-
-    if (res['success']) {
+    var res = json.decode(response.body);
+    if (response.statusCode == 200) {
       customSnackbar("Success", res['message'], "success");
-      fetchAllNotes();
+      await fetchAllNotes();
+      update(); 
     } else {
-      customSnackbar("Error", res['message'], "error");
+      customSnackbar("Error", res['message'] ?? "Failed to delete note", "error");
     }
-    update();
+  } catch (err) {
+    customSnackbar("Error", "An error occurred on the server", "error");
   }
+}
 
-  var selectedColorMap = <String, Color>{}.obs; // Menggunakan map untuk menyimpan warna berdasarkan ID
+
+  var selectedColorMap = <String, Color>{}.obs;
 
   void updateColor(String noteId, Color color) {
     selectedColorMap[noteId] = color;
-    update(); 
+    update();
   }
 
   Color getColorForNote(String noteId) {
-    return selectedColorMap[noteId] ?? const Color(0xffF7F7F7); 
-  }
+  return selectedColorMap[noteId] ?? const Color(0xffF7F7F7); // Warna default
+}
 }

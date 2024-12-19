@@ -42,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 CustomTextField(
-                  hint: 'Kata Sandi',
+                  hint: 'Password',
                   controller: controller.passwordController,
                   obscureText: true,
                 ),
@@ -62,7 +62,7 @@ class LoginScreen extends StatelessWidget {
                       color: Color(0xff949494),
                     ),
                     children: [
-                      const TextSpan(text: 'Belum punya akun? '),
+                      const TextSpan(text: 'Don\'t have an account yet? '),
                       TextSpan(
                         text: 'Sign Up',
                         recognizer: TapGestureRecognizer()

@@ -3,6 +3,7 @@ import 'package:chicnotes/utils/shared_prefs.dart';
 import 'package:chicnotes/models/note.dart';
 import 'package:get/get.dart';
 import 'package:chicnotes/controllers/note_controller.dart';
+import 'package:intl/intl.dart';
 
 class DetailNoteScreen extends StatefulWidget {
   final Note note;
@@ -34,7 +35,7 @@ class _DetailNoteScreenState extends State<DetailNoteScreen> {
 
   Future<void> _loadSelectedColor() async {
     if (widget.note.id != null) {
-      Color color = await sharedPrefs.getColor(widget.note.id!);
+      Color color = await sharedPrefs.getColor(widget.note.id!.toString()); // Convert id to String
       setState(() {
         selectedColor = color;
       });
@@ -43,9 +44,9 @@ class _DetailNoteScreenState extends State<DetailNoteScreen> {
 
   Future<void> _saveSelectedColor(Color color) async {
     if (widget.note.id != null) {
-      await sharedPrefs.storeColor(widget.note.id!, color);
+      await sharedPrefs.storeColor(widget.note.id!.toString(), color); // Convert id to String
       final noteController = Get.find<NoteController>();
-      noteController.updateColor(widget.note.id!, color);
+      noteController.updateColor(widget.note.id!.toString(), color); // Convert id to String
     }
   }
 
@@ -69,12 +70,12 @@ class _DetailNoteScreenState extends State<DetailNoteScreen> {
               icon: const Icon(Icons.color_lens, color: Colors.black),
               underline: const SizedBox.shrink(),
               onChanged: (Color? newColor) {
-                if (newColor != null) {
-                  setState(() {
-                    selectedColor = newColor;
-                  });
-                  _saveSelectedColor(newColor);
-                }
+                  if (newColor != null && newColor != selectedColor) { // Check if the color actually changed
+                      setState(() {
+                          selectedColor = newColor;
+                      });
+                      _saveSelectedColor(newColor); // Only save if there's a change
+                  }
               },
               items: availableColors.map<DropdownMenuItem<Color>>((Color color) {
                 return DropdownMenuItem<Color>(
@@ -123,7 +124,9 @@ class _DetailNoteScreenState extends State<DetailNoteScreen> {
                   const Icon(Icons.calendar_today, color: Color(0xff000000)),
                   const SizedBox(width: 10),
                   Text(
-                    widget.note.date ?? 'No Date',
+                    widget.note.createdAt != null
+                        ? DateFormat('dd MMM yyyy').format(DateTime.parse(widget.note.createdAt!))
+                        : 'No Date', // Memformat tanggal
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 16,

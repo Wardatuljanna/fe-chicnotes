@@ -23,25 +23,17 @@ class SignupController extends GetxController {
     confirmPasswordController = TextEditingController();
   }
 
-  // @override
-  // void onClose() {
-  //   super.onClose();
-  //   nameController.dispose();
-  //   emailController.dispose();
-  //   passwordController.dispose();
-  //   confirmPasswordController.dispose();
-  // }
-
   checkSignup() {
-    if (nameController.text.isEmpty) {
-      customSnackbar("Error", "Name is required", "error");
-    } else if (emailController.text.isEmpty ||
-        GetUtils.isEmail(emailController.text) == false) {
+    // Validasi semua kolom terisi
+    if (nameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        confirmPasswordController.text.isEmpty) {
+      customSnackbar("Error", "All fields must be filled in", "error");
+    } else if (!GetUtils.isEmail(emailController.text)) {
       customSnackbar("Error", "A valid email is required", "error");
-    } else if (passwordController.text.isEmpty) {
-      customSnackbar("Error", "Password is required", "error");
     } else if (passwordController.text != confirmPasswordController.text) {
-      customSnackbar("Error", "Password doesnot match!", "error");
+      customSnackbar("Error", "The password doesn't match!", "error");
     } else {
       Get.showOverlay(
           asyncFunction: () => signup(), loadingWidget: const Loader());
@@ -49,19 +41,26 @@ class SignupController extends GetxController {
   }
 
   signup() async {
-    var response = await http.post(Uri.parse('${baseurl}signup.php'), body: {
-      "name": nameController.text,
-      "email": emailController.text,
-      "password": passwordController.text,
-    });
+    var response = await http.post(
+      Uri.parse('${baseurl}auth/signup'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "name": nameController.text,
+        "email": emailController.text,
+        "password": passwordController.text,
+      }),
+    );
 
-    var res = await json.decode(response.body);
+    var res = json.decode(response.body);
 
-    if (res['success']) {
+    if (response.statusCode == 201 && res['message'] == 'User created successfully') {
       customSnackbar("Success", res['message'], "success");
       Get.offAllNamed(GetRoutes.login);
-    }else {
-      customSnackbar("Error", res['message'], "error");
+    } else if (response.statusCode == 409) {
+      // Pesan error untuk email yang sudah digunakan
+      customSnackbar("Error", "Email already in use. Use another email.", "error");
+    } else {
+      customSnackbar("Error", res['message'] ?? "Failed to register", "error");
     }
   }
 }

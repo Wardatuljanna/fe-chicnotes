@@ -26,7 +26,7 @@ class CustomSearch extends StatelessWidget {
         },
         decoration: const InputDecoration(
           border: InputBorder.none,
-          hintText: "Cari",
+          hintText: "Search Title",
           hintStyle: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 20,

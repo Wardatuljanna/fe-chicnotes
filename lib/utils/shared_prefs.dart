@@ -1,34 +1,47 @@
 import 'dart:ui';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPrefs {
-  storeUser(user) async {
+  Future<void> storeUser(String user) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('user', user);
   }
 
-  getUser() async {
+  Future<String?> getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('user');
   }
 
-  removeUser() async {
+  Future<void> removeUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.remove('user');
+    prefs.remove('user');
   }
 
-  // Store the color based on note ID only when explicitly set
+  // Token storage and retrieval
+  Future<void> storeToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('token', token);
+  }
+
+  Future<String?> getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  Future<void> removeToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+  }
+
+  // Color storage for each note
   Future<void> storeColor(String noteId, Color color) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setInt('selectedColor_$noteId', color.value);
   }
 
-  // Retrieve the color for a specific note ID, or use a default if not set
   Future<Color> getColor(String noteId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? colorValue = prefs.getInt('selectedColor_$noteId');
-    // Default color set here only if no color is found
-    return colorValue != null ? Color(colorValue) : const Color(0xffffffff); // Default white color
+    return colorValue != null ? Color(colorValue) : const Color(0xffffffff);
   }
 }
